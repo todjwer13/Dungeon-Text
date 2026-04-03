@@ -20,6 +20,7 @@ struct Player
 void characterMenu(Player* saveSlots, int& characterCount);
 void createCharacter(Player* saveSlots, int& characterCount);
 void gameLoop(Player& player);
+void ShowShop();
 
 void startMenu(Player* saveSlots, int& characterCount)
 {
@@ -125,17 +126,17 @@ void gameLoop(Player& player)
         std::cout << "\n공격력: " << player.atk << "   |   " << "방어력: " << player.def << std::endl;
 
         std::cout << "\n행동을 선택하세요." << std::endl;
-        std::cout << "\n1. 대화하기   2. 수색하기     3. 휴식하기     4. 장비 강화    5. 저장후 종료하기" << std::endl;
+        std::cout << "\n1. 대화하기   2. 탐험하기     3. 휴식하기     4. 장비 강화    5. 저장후 종료하기" << std::endl;
         std::cout << "\n입력: ";
         std::cin >> playingInput;
         if (playingInput == 1)
         {
-            //ShowShop();
+            ShowShop();
         }
         else if (playingInput == 2)
         {
             system("cls");
-            std::cout << "\n수색하기를 선택하셨습니다." << std::endl;
+            std::cout << "\n탐험하기를 선택하셨습니다." << std::endl;
         }
         else if (playingInput == 3)
         {
@@ -145,9 +146,14 @@ void gameLoop(Player& player)
         else if (playingInput == 4)
         {
             system("cls");
-            std::cout << "\n장비 강화하기를 선택하셨습니다." << std::endl;
+            std::cout << "\n휴식하기를 선택하셨습니다." << std::endl;
         }
         else if (playingInput == 5)
+        {
+            system("cls");
+            std::cout << "\n장비 강화하기를 선택하셨습니다." << std::endl;
+        }
+        else if (playingInput == 6)
         {
             system("cls");
             std::cout << "\n저장후 종료하기를 선택하셨습니다." << std::endl;
@@ -158,11 +164,11 @@ void gameLoop(Player& player)
             std::cout << "\n잘못된 입력입니다." << std::endl;
         }
     }
-
 }
 
 void ShowShop() 
 {
+    system("cls");
     int shopInput = 0;
     int buyInput = 0;
     int sellInput = 0;
