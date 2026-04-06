@@ -292,9 +292,11 @@ void ShowMerchantTalk()
 
 int main()
 {
-    srand(time(NULL));
+    srand((unsigned int)time(0));
+
     Player saveSlots[3] = {};
     int characterCount = 0;
+
     startMenu(saveSlots, characterCount);
     
 	return 0;
