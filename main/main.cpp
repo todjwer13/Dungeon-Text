@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <algorithm>
 #include <ctime>
 
 struct Unit {
@@ -20,7 +21,7 @@ struct Player {
     int maxMp = 0;
     int gold = 0;
     int currentExp = 0;
-	int maxExp = 100;
+    int maxExp = 50;
     int level = 0;
 
 
@@ -34,26 +35,40 @@ struct Player {
     }
 
     void LevelUp() {
+        system("cls");
         currentExp -= maxExp;
         level++;
-
+        std::cout << "★ 레벨 업! 현재 레벨: " << level << " ★\n";
         maxExp = static_cast<int>(maxExp * 1.2);
 
-        std::cout << "★ 레벨 업! 현재 레벨: " << level << " ★\n";
+		stat.maxHp += 20;
+        std::cout << "★ 최대 체력이 올랐습니다 최대체력: " << stat.maxHp << " ★\n";
+		maxMp += 10;
+        std::cout << "★ 최대 마나이 올랐습니다 최대마나: " << level << " ★\n";
+		stat.hp = stat.maxHp;
+        std::cout << "★ 체력이 회복되었습니다. " << level << " ★\n";
+		mp = maxMp;
+        std::cout << "★ 마나가 회복되었습니다. " << level << " ★\n";
+		stat.atk += 5;
+        std::cout << "★ 공격력이 5만큼 증가하였습니다. " << level << " ★\n";
+		stat.def += 2;
+        std::cout << "★ 방어력이 2만큼 증가하였습니다. " << level << " ★\n";
     }
 };
 
 struct Monster {
-    Unit stat;        
+    Unit stat;
     int giveExp = 0;
     int giveGold = 0;
 };
 
 void characterMenu(Player* saveSlots, int& characterCount);
 void createCharacter(Player* saveSlots, int& characterCount);
-void gameLoop(Player& player);
-void ShowShop();
-void ShowMerchantTalk();
+void gameLoop(Player& player, int& characterCount);
+bool startBattle(Player& player, Monster& monster);
+Monster CreateMonster(int type);
+void showShop(Player& player);
+void showMerchantTalk();
 
 static void startMenu(Player* saveSlots, int& characterCount)
 {
@@ -73,6 +88,8 @@ static void startMenu(Player* saveSlots, int& characterCount)
     {
         system("cls");
         std::cout << "\n게임을 종료합니다.";
+
+        exit(0);
     }
     else
     {
@@ -108,7 +125,8 @@ void characterMenu(Player* saveSlots, int& characterCount)
 
                 std::cout << "[" << saveSlots[targetIndex].stat.name << "] 캐릭터를 선택했습니다!" << std::endl;
 
-				gameLoop(saveSlots[targetIndex]);
+                gameLoop(saveSlots[targetIndex], characterCount);
+
 
                 break;
             }
@@ -125,7 +143,7 @@ Monster CreateMonster(int type) {
 
     switch (type) {
     case 1:
-        newMonster.stat = { "슬라임", 30, 30, 5, 2, 5, 10 }; // 이름, HP, MaxHP, ATK, DEF, SPD, EVA
+        newMonster.stat = { "슬라임", 30, 30, 6, 2, 5, 10 }; // 이름, HP, MaxHP, ATK, DEF, SPD, EVA
         newMonster.giveExp = 10;
         newMonster.giveGold = 20;
         break;
@@ -174,12 +192,12 @@ void createCharacter(Player* saveSlots, int& characterCount) {
     return;
 }
 
-void gameLoop(Player& player) 
+void gameLoop(Player& player, int& characterCount)
 {
     int playingInput = 0;
     while (true) {
         system("cls");
-		std::cout << "이름: " << player.stat.name << "   |   " << "소지골드: " << player.gold << std::endl;
+        std::cout << "이름: " << player.stat.name << "   |   " << "소지골드: " << player.gold << std::endl;
         std::cout << "\n레벨: " << player.level << "   |   " << "경험치" << player.currentExp << std::endl;
         std::cout << "\n체력: " << player.stat.hp << "/" << player.stat.maxHp << "   |   " << "마나: " << player.mp << "/" << player.maxMp << std::endl;
         std::cout << "\n공격력: " << player.stat.atk << "   |   " << "방어력: " << player.stat.def << std::endl;
@@ -190,7 +208,7 @@ void gameLoop(Player& player)
         std::cin >> playingInput;
         if (playingInput == 1)
         {
-            ShowShop();
+            showShop(player);
         }
         else if (playingInput == 2)
         {
@@ -203,9 +221,30 @@ void gameLoop(Player& player)
             Monster currentMonster = CreateMonster(randomType);
 
             std::cout << "\n앗! [" << currentMonster.stat.name << "](이)가 나타났다!" << std::endl;
-            system("pause");
 
-            // 여기서 나중에 Battle(player, currentMonster); 함수 부르기
+			std::cout << "\n1. 싸우기   2. 도망가기" << std::endl;
+			std::cout << "\n입력: ";
+			std::cin >> playingInput;
+            if (playingInput == 1) {
+
+                bool isVictory = startBattle(player, currentMonster);
+
+                if (!isVictory) // 패배했다면
+                {
+                    // 1. 캐릭터 데이터 초기화 (이름을 "Empty" 등으로 변경하거나 초기화)
+                    player.stat.name = "Empty Slot";
+                    player.level = 0;
+                    characterCount--;
+                    // 필요하다면 characterCount를 조절하는 로직 추가
+
+                    std::cout << "\n캐릭터가 소멸되었습니다. 메인 메뉴로 돌아갑니다." << std::endl;
+                    system("pause");
+                    return; // gameLoop 함수 자체를 종료하여 characterMenu로 돌아감
+                }
+            }
+            else if (playingInput == 2) {
+                std::cout << "\n도망가기를 선택하셨습니다." << std::endl;
+            }
         }
         else if (playingInput == 3)
         {
@@ -235,7 +274,7 @@ void gameLoop(Player& player)
     }
 }
 
-void ShowShop() 
+void showShop(Player& player)
 {
     system("cls");
     int shopInput = 0;
@@ -244,7 +283,7 @@ void ShowShop()
 
     std::cout << "\n대화하기를 선택하셨습니다." << std::endl;
     std::cout << "\n상인" << std::endl;
-    ShowMerchantTalk();
+    showMerchantTalk();
     std::cout << "\n1. 구매하기   2. 판매하기     3. 돌아가기" << std::endl;
     std::cout << "\n입력: ";
     std::cin >> shopInput;
@@ -274,7 +313,7 @@ void ShowShop()
     }
 }
 
-void ShowMerchantTalk() 
+void showMerchantTalk()
 {
     std::vector<std::string> talks = {
         "오늘은 좋은 날이군! 혹시 필요한 물건이 있나?",
@@ -284,9 +323,63 @@ void ShowMerchantTalk()
         "요즘은 모험가들이 많이 늘어서, 좋은 장비를 구하기가 어려워졌어.",
         "물건을 사러 왔나? 혹 그대가 좋은 물건이 있다면 내 구매 할 의향도 있네!",
         "가끔은 일어나서 기지게를 피는게 좋네."
-	};
-	int randomIndex = rand() % talks.size();
+    };
+    int randomIndex = rand() % talks.size();
     std::cout << talks[randomIndex] << std::endl;
+}
+
+bool startBattle(Player& player, Monster& monster)
+{
+    while (player.stat.hp > 0 && monster.stat.hp > 0)
+    {
+        system("pause");
+        if (player.stat.speed >= monster.stat.speed) 
+        {
+            int damageToMonster = std::max(0, player.stat.atk - monster.stat.def);
+            monster.stat.hp -= damageToMonster;
+            std::cout << "플레이어가 " << damageToMonster << "의 피해를 입혔습니다! 몬스터 HP: " << monster.stat.hp << "/" << monster.stat.maxHp << std::endl;
+            if (monster.stat.hp <= 0) 
+            {
+                std::cout << "몬스터를 처치했습니다!" << std::endl;
+                player.AddExperience(monster.giveExp);
+                player.gold += monster.giveGold;
+                std::cout << "골드 " << monster.giveGold << "을 획득했습니다! 현재 골드: " << player.gold << std::endl;
+                system("pause");
+                return true;
+            }
+            int damageToPlayer = std::max(0, monster.stat.atk - player.stat.def);
+            player.stat.hp -= damageToPlayer;
+            std::cout << "몬스터가 " << damageToPlayer << "의 피해를 입혔습니다! 플레이어 HP: " << player.stat.hp << "/" << player.stat.maxHp << std::endl;
+            if (player.stat.hp <= 0) 
+            {
+                std::cout << "플레이어가 패배했습니다..." << std::endl;
+                system("pause");
+                return false;
+            }
+        }   
+        else 
+        {
+            int damageToPlayer = std::max(0, monster.stat.atk - player.stat.def);
+            player.stat.hp -= damageToPlayer;
+            std::cout << "몬스터가 " << damageToPlayer << "의 피해를 입혔습니다! 플레이어 HP: " << player.stat.hp << "/" << player.stat.maxHp << std::endl;
+            if (player.stat.hp <= 0)
+            {
+                std::cout << "플레이어가 패배했습니다..." << std::endl;
+                return false;
+            }
+            int damageToMonster = std::max(0, player.stat.atk - monster.stat.def);
+            monster.stat.hp -= damageToMonster;
+            std::cout << "플레이어가 " << damageToMonster << "의 피해를 입혔습니다! 몬스터 HP: " << monster.stat.hp << "/" << monster.stat.maxHp << std::endl;
+            if (monster.stat.hp <= 0)
+            {
+                std::cout << "몬스터를 처치했습니다!" << std::endl;
+                player.AddExperience(monster.giveExp);
+                player.gold += monster.giveGold;
+                std::cout << "골드 " << monster.giveGold << "을 획득했습니다! 현재 골드: " << player.gold << std::endl;
+                return true;
+            }
+        }
+    }
 }
 
 
@@ -297,7 +390,11 @@ int main()
     Player saveSlots[3] = {};
     int characterCount = 0;
 
-    startMenu(saveSlots, characterCount);
-    
-	return 0;
+    while (true)
+    {
+        startMenu(saveSlots, characterCount);
+        // startMenu가 종료(return)되면 다시 이 while문의 처음으로 돌아와 메뉴를 보여줍니다.
+    }
+
+    return 0;
 }
