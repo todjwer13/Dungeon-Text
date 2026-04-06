@@ -13,8 +13,28 @@ struct Player
     int mp = 0;
     int maxMp = 0;
     int gold = 0;
-    int exp = 0;
+    int currentExp = 0;
+	int maxExp = 100;
     int level = 0;
+
+
+    void AddExperience(int exp) {
+        currentExp += exp;
+        std::cout << exp << "의 경험치를 획득했습니다!\n";
+
+        while (currentExp >= maxExp) {
+            LevelUp();
+        }
+    }
+
+    void LevelUp() {
+        currentExp -= maxExp;
+        level++;
+
+        maxExp = static_cast<int>(maxExp * 1.2);
+
+        std::cout << "★ 레벨 업! 현재 레벨: " << level << " ★\n";
+    }
 };
 
 void characterMenu(Player* saveSlots, int& characterCount);
@@ -105,7 +125,7 @@ void createCharacter(Player* saveSlots, int& characterCount) {
     saveSlots[characterCount].atk = 10;
     saveSlots[characterCount].def = 10;
     saveSlots[characterCount].gold = 500;
-    saveSlots[characterCount].exp = 0;
+    saveSlots[characterCount].currentExp = 0;
     saveSlots[characterCount].level = 1;
 
     characterCount++;
@@ -126,7 +146,7 @@ void gameLoop(Player& player)
         std::cout << "\n공격력: " << player.atk << "   |   " << "방어력: " << player.def << std::endl;
 
         std::cout << "\n행동을 선택하세요." << std::endl;
-        std::cout << "\n1. 대화하기   2. 탐험하기     3. 휴식하기     4. 장비 강화    5. 저장후 종료하기" << std::endl;
+        std::cout << "\n1. 대화하기   2. 탐험하기     3. 휴식하기     4. 인벤토리 열기    5. 저장후 종료하기" << std::endl;
         std::cout << "\n입력: ";
         std::cin >> playingInput;
         if (playingInput == 1)
@@ -151,7 +171,7 @@ void gameLoop(Player& player)
         else if (playingInput == 5)
         {
             system("cls");
-            std::cout << "\n장비 강화하기를 선택하셨습니다." << std::endl;
+            std::cout << "\n인벤토리 열기를 선택하셨습니다." << std::endl;
         }
         else if (playingInput == 6)
         {
