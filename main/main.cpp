@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <ctime>
 
 struct Player
 {
@@ -41,6 +42,7 @@ void characterMenu(Player* saveSlots, int& characterCount);
 void createCharacter(Player* saveSlots, int& characterCount);
 void gameLoop(Player& player);
 void ShowShop();
+void ShowMerchantTalk();
 
 void startMenu(Player* saveSlots, int& characterCount)
 {
@@ -124,7 +126,7 @@ void createCharacter(Player* saveSlots, int& characterCount) {
     saveSlots[characterCount].maxMp = 100;
     saveSlots[characterCount].atk = 10;
     saveSlots[characterCount].def = 10;
-    saveSlots[characterCount].gold = 500;
+    saveSlots[characterCount].gold = 1000;
     saveSlots[characterCount].currentExp = 0;
     saveSlots[characterCount].level = 1;
 
@@ -195,8 +197,7 @@ void ShowShop()
 
     std::cout << "\n대화하기를 선택하셨습니다." << std::endl;
     std::cout << "\n상인" << std::endl;
-    std::cout << "\n랜덤 대화(중간중간 귀중한 정보가 나옴)" << std::endl;
-    std::cout << "\n물건을 사러 왔나? 혹 그대가 좋은 물건이 있다면 내 구매 할 의향도 있네!!" << std::endl;
+    ShowMerchantTalk();
     std::cout << "\n1. 구매하기   2. 판매하기     3. 돌아가기" << std::endl;
     std::cout << "\n입력: ";
     std::cin >> shopInput;
@@ -226,9 +227,25 @@ void ShowShop()
     }
 }
 
+void ShowMerchantTalk() 
+{
+    std::vector<std::string> talks = {
+        "오늘은 좋은 날이군! 혹시 필요한 물건이 있나?",
+        "이번 층에서는 이상한 소문이 들려오던데, 조심하는 게 좋을 거야.",
+        "최근에 이 층엔 강력한 몬스터가 나타났다는 소문이 있어. 조심해야 해!",
+        "이번 층에는 숨겨진 보물이 있다고 하는데, 한번 찾아보는 건 어때?",
+        "요즘은 모험가들이 많이 늘어서, 좋은 장비를 구하기가 어려워졌어.",
+        "물건을 사러 왔나? 혹 그대가 좋은 물건이 있다면 내 구매 할 의향도 있네!",
+        "가끔은 일어나서 기지게를 피는게 좋네."
+	};
+	int randomIndex = rand() % talks.size();
+    std::cout << talks[randomIndex] << std::endl;
+}
+
 
 int main()
 {
+    srand(time(NULL));
     Player saveSlots[3] = {};
     int characterCount = 0;
     startMenu(saveSlots, characterCount);
