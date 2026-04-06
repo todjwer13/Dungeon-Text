@@ -44,15 +44,15 @@ struct Player {
 		stat.maxHp += 20;
         std::cout << "★ 최대 체력이 올랐습니다 최대체력: " << stat.maxHp << " ★\n";
 		maxMp += 10;
-        std::cout << "★ 최대 마나이 올랐습니다 최대마나: " << level << " ★\n";
+        std::cout << "★ 최대 마나이 올랐습니다 최대마나: " << maxMp << " ★\n";
 		stat.hp = stat.maxHp;
-        std::cout << "★ 체력이 회복되었습니다. " << level << " ★\n";
+        std::cout << "★ 체력이 회복되었습니다. ★\n";
 		mp = maxMp;
-        std::cout << "★ 마나가 회복되었습니다. " << level << " ★\n";
+        std::cout << "★ 마나가 회복되었습니다. ★\n";
 		stat.atk += 5;
-        std::cout << "★ 공격력이 5만큼 증가하였습니다. " << level << " ★\n";
+        std::cout << "★ 공격력이 5만큼 증가하였습니다. ★\n";
 		stat.def += 2;
-        std::cout << "★ 방어력이 2만큼 증가하였습니다. " << level << " ★\n";
+        std::cout << "★ 방어력이 2만큼 증가하였습니다. ★\n";
     }
 };
 
