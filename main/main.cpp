@@ -23,7 +23,7 @@ struct Player {
     int currentExp = 0;
     int maxExp = 50;
     int level = 0;
-
+    
 
     void AddExperience(int exp) {
         currentExp += exp;
@@ -69,9 +69,25 @@ bool startBattle(Player& player, Monster& monster);
 Monster CreateMonster(int type);
 void showShop(Player& player);
 void showMerchantTalk();
+void deleteCharacter(Player* saveSlots, int& characterCount);
+void extinctionCharacter(Player& player, int& characterCount);
 
 static void startMenu(Player* saveSlots, int& characterCount)
 {
+    if (characterCount > 0) {
+        for (int i = 0; i < 3; i++) {
+            if (saveSlots[i].stat.name == "Unknown")
+            {
+                for (int j = i; j < characterCount - 1; j++) {
+                    saveSlots[j] = saveSlots[j + 1];
+                }
+                characterCount--;
+            }
+        }
+        
+	}
+    
+
     system("cls");
     int menuInput = 0;
     std::cout << "게임에 오신 것을 환영합니다!" << std::endl;
@@ -111,6 +127,8 @@ void characterMenu(Player* saveSlots, int& characterCount)
             for (int i = 0; i < characterCount; i++) {
                 std::cout << i + 1 << ". " << saveSlots[i].stat.name << " (Lv." << saveSlots[i].level << ")" << std::endl;
             }
+            std::cout << "5. 캐릭터 생성하기" << std::endl;
+            std::cout << "6. 캐릭터 삭제하기" << std::endl;
             std::cout << "0. 종료하기" << std::endl;
             std::cout << "선택: ";
 
@@ -130,6 +148,21 @@ void characterMenu(Player* saveSlots, int& characterCount)
 
                 break;
             }
+            else if (select == 5) {
+                if (characterCount >= 3) {
+                    system("cls");
+                    std::cout << "캐릭 슬롯이 가득 찼습니다!" << std::endl;
+                    system("pause");
+                }
+                else {
+                    system("cls");
+                    createCharacter(saveSlots, characterCount);
+				}
+			}
+            else if (select == 6) {
+                    system("cls");
+                    deleteCharacter(saveSlots, characterCount);
+			}
             else {
                 std::cout << "\n잘못된 번호입니다. 다시 선택해주세요." << std::endl;
             }
@@ -192,6 +225,28 @@ void createCharacter(Player* saveSlots, int& characterCount) {
     return;
 }
 
+void deleteCharacter(Player* saveSlots, int& characterCount) {
+    if (characterCount <= 0) {
+		system("cls");
+		std::cout << "삭제할 캐릭터가 없습니다!" << std::endl;
+        return;
+    }
+	std::cout << "삭제할 캐릭터 번호를 입력하세요: ";
+	int deleteInput = 0;
+	std::cin >> deleteInput;
+    if (deleteInput < 1 || deleteInput > characterCount) {
+        std::cout << "잘못된 번호입니다!" << std::endl;
+        return;
+    }
+    for (int i = deleteInput - 1; i < characterCount - 1; i++) {
+        saveSlots[i] = saveSlots[i + 1];
+    }
+    characterCount--;
+    system("cls");
+    std::cout << "캐릭터가 삭제되었습니다!" << std::endl;
+    system("pause");
+}
+
 void gameLoop(Player& player, int& characterCount)
 {
     int playingInput = 0;
@@ -216,7 +271,6 @@ void gameLoop(Player& player, int& characterCount)
             std::cout << "\n탐험하기를 선택하셨습니다." << std::endl;
             std::cout << "\n적을 찾아 탐험을 시작합니다..." << std::endl;
 
-            // 1~3번 중 랜덤하게 몬스터 한 마리를 생성
             int randomType = (rand() % 3) + 1;
             Monster currentMonster = CreateMonster(randomType);
 
@@ -229,17 +283,14 @@ void gameLoop(Player& player, int& characterCount)
 
                 bool isVictory = startBattle(player, currentMonster);
 
-                if (!isVictory) // 패배했다면
+                if (!isVictory)
                 {
-                    // 1. 캐릭터 데이터 초기화 (이름을 "Empty" 등으로 변경하거나 초기화)
-                    player.stat.name = "Empty Slot";
-                    player.level = 0;
-                    characterCount--;
-                    // 필요하다면 characterCount를 조절하는 로직 추가
+					player.stat.name = "Unknown";
+
 
                     std::cout << "\n캐릭터가 소멸되었습니다. 메인 메뉴로 돌아갑니다." << std::endl;
                     system("pause");
-                    return; // gameLoop 함수 자체를 종료하여 characterMenu로 돌아감
+                    return;
                 }
             }
             else if (playingInput == 2) {
