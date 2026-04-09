@@ -153,7 +153,9 @@ Monster CreateMonster(int type) {
 
 
 
+
 void characterMenu(Player* saveSlots, int& characterCount);
+void cleanUpCharacters(Player* saveSlots, int& characterCount);
 void createCharacter(Player* saveSlots, int& characterCount);
 void refreshStatus(Player& player);
 void giveStartetPack(Player& player);
@@ -168,20 +170,6 @@ void extinctionCharacter(Player& player, int& characterCount);
 
 static void startMenu(Player* saveSlots, int& characterCount)
 {
-    if (characterCount > 0) {
-        for (int i = 0; i < 3; i++) {
-            if (saveSlots[i].stat.name == "Unknown")
-            {
-                for (int j = i; j < characterCount - 1; j++) {
-                    saveSlots[j] = saveSlots[j + 1];
-                }
-                characterCount--;
-            }
-        }
-        
-	}
-    
-
     system("cls");
     int menuInput = 0;
     std::cout << "게임에 오신 것을 환영합니다!" << std::endl;
@@ -204,6 +192,21 @@ static void startMenu(Player* saveSlots, int& characterCount)
     else
     {
         std::cout << "\n잘못된 입력입니다.";
+    }
+}
+
+void cleanUpCharacters(Player* saveSlots, int& characterCount) {
+    if (characterCount > 0) {
+        for (int i = characterCount - 1; i >= 0; i--) {
+            if (saveSlots[i].stat.name == "Unknown")
+            {
+                for (int j = i; j < characterCount - 1; j++) {
+                    saveSlots[j] = saveSlots[j + 1];
+                }
+                characterCount--;
+            }
+        }
+
     }
 }
 
@@ -275,6 +278,8 @@ void createCharacter(Player* saveSlots, int& characterCount) {
     std::string newName;
     std::cin >> newName;
 
+    giveStartetPack(saveSlots[characterCount]);
+
     saveSlots[characterCount].stat.name = newName;
     saveSlots[characterCount].stat.hp = 100;
     saveSlots[characterCount].stat.maxHp = 100;
@@ -287,7 +292,6 @@ void createCharacter(Player* saveSlots, int& characterCount) {
     saveSlots[characterCount].gold = 500;
     saveSlots[characterCount].currentExp = 0;
     saveSlots[characterCount].level = 1;
-	giveStartetPack(saveSlots[characterCount]);
 
     characterCount++;
     system("cls");
@@ -327,6 +331,11 @@ void giveStartetPack(Player& player) {
 }
 
 void refreshStatus(Player& player) {
+	// 유물 공격력과 방어력, 체력 초기화
+    player.weaponAtk = 0;
+    player.armorDef = 0;
+    player.armorHp = 0;
+	// 인벤토리를 순회하면서 유물의 공격력과 방어력, 체력 보너스를 적용
     for (size_t i = 0; i < player.inventory.size(); i++) {
         if (player.inventory[i].itemType == RELICS)
         {
@@ -339,7 +348,25 @@ void refreshStatus(Player& player) {
 
 void showInventory(Player& player) {
 	int inventoryInput = 0;
-    std::cout << "\n인벤토리:" << std::endl;
+	std::cout << "획득한 유물 아이템:" << std::endl;
+    for (size_t i = 0; i < player.inventory.size(); i++) {
+        if (player.inventory[i].itemType == RELICS)
+        {
+            std::cout << "\n" << player.inventory[i].name;
+            if (player.inventory[i].weaponAtk > 0) {
+                std::cout << " | 추가 공격력: " << player.inventory[i].weaponAtk;
+            }
+            if (player.inventory[i].armorDef > 0) {
+                std::cout << " | 추가 방어력: " << player.inventory[i].armorDef;
+			}
+            if (player.inventory[i].armorHp > 0) {
+                std::cout << " | 추가 체력: " << player.inventory[i].armorHp;
+			}
+        }
+    }
+
+	std::cout << "\n------------------------------" << std::endl;
+    std::cout << "\n소비 아이템:" << std::endl;
     for (size_t i = 0; i < player.inventory.size(); i++) {
         if (player.inventory[i].itemType == CONSUMABLE)
         {
@@ -452,7 +479,7 @@ void gameLoop(Player& player, int& characterCount)
         {
             system("cls");
             std::cout << "\n저장후 종료하기를 선택하셨습니다." << std::endl;
-            break;
+            return;
         }
         else
         {
@@ -580,6 +607,7 @@ int main()
 
     while (true)
     {
+        cleanUpCharacters(saveSlots, characterCount);
         startMenu(saveSlots, characterCount);
         // startMenu가 종료(return)되면 다시 이 while문의 처음으로 돌아와 메뉴를 보여줍니다.
     }
