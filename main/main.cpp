@@ -527,6 +527,16 @@ void showShop(Player& player)
     }
 }
 
+void showShopItem() {
+    for (int i = 0; i < 3; i++) 
+    {
+		// 각 층마다 한번씩만 물품을 파는 것으로 가정하고, 층마다 파는 물품이 다르다고 가정하겠습니다.
+		// 예시로 저층에선 체력 회복 물약, 중층부터 확률에 따라 유물 아이템이 등장하는 것으로 하겠습니다.
+		// 층마다 파는 물품이 같을수도 다를수도
+		// 가아끔 아주 희귀한 유물 아이템이 등장할 수도 있습니다.
+    }
+}
+
 void showMerchantTalk()
 {
     std::vector<std::string> talks = {
