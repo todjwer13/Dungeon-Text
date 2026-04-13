@@ -14,6 +14,7 @@ struct Item {
     int armorDef = 0;
     int hp = 0;
 	int armorHp = 0;
+	int tier = 0;
     int price = 0;
 };
 
@@ -44,41 +45,54 @@ Item ItemList(int type) {
     case 1:
         newItem.name = "소형 체력 회복 물약";
         newItem.hp = 50;
-        newItem.price = 30;
+        newItem.price = 50;
 		newItem.itemType = CONSUMABLE;
+        newItem.tier = 1;
         break;
     case 2:
-        newItem.name = "대형 체력 회복 물약";
+        newItem.name = "중형 체력 회복 물약";
         newItem.hp = 150;
-        newItem.price = 75;
-		newItem.itemType = CONSUMABLE;
+        newItem.price = 130;
+        newItem.itemType = CONSUMABLE;
+        newItem.tier = 2;
         break;
     case 3:
+        newItem.name = "대형 체력 회복 물약";
+        newItem.hp = 300;
+        newItem.price = 250;
+		newItem.itemType = CONSUMABLE;
+        newItem.tier = 3;
+        break;
+    case 4:
         newItem.name = "검";
         newItem.weaponAtk = 10;
         newItem.price = 800;
         newItem.itemType = RELICS;
+        newItem.tier = 1;
         break;
-    case 4:
-        newItem.name = "옷";
+    case 5:
+        newItem.name = "갑옷";
         newItem.armorHp = 50;
         newItem.armorDef = 10;
         newItem.price = 1000;
         newItem.itemType = RELICS;
+        newItem.tier = 1;
         break;
-    case 5:
+    case 6:
         newItem.name = "신발";
         newItem.armorHp = 20;
         newItem.armorDef = 5;
         newItem.price = 700;
         newItem.itemType = RELICS;
+        newItem.tier = 1;
         break;
-    case 6:
+    case 7:
         newItem.name = "장갑";
         newItem.armorHp = 10;
         newItem.armorDef = 3;
         newItem.price = 500;
         newItem.itemType = RELICS;
+        newItem.tier = 1;
         break;
     }
 
@@ -96,6 +110,7 @@ struct Player {
     int weaponAtk = 0;
     int armorHp = 0;
     int armorDef = 0;
+	int floor = 1;
 
     std::vector <Item> inventory;
 
@@ -163,10 +178,12 @@ void showInventory(Player& player);
 void gameLoop(Player& player, int& characterCount);
 bool startBattle(Player& player, Monster& monster);
 Monster CreateMonster(int type);
-void showShop(Player& player);
+void showShop(Player& player, std::vector<Item>& shopStock);
+void showShopItem(Player& player, std::vector<Item>& shopStock);
+void ramdomItemList(Player& player, std::vector<Item>& shopStock);
+void showPlayerItem(Player& player);
 void showMerchantTalk();
 void deleteCharacter(Player* saveSlots, int& characterCount);
-void extinctionCharacter(Player& player, int& characterCount);
 
 static void startMenu(Player* saveSlots, int& characterCount)
 {
@@ -326,8 +343,8 @@ void giveStartetPack(Player& player) {
     for (int i = 1; i <= 3; i++) {
         player.inventory.push_back(ItemList(1));
 	}
-    player.inventory.push_back(ItemList(3));
     player.inventory.push_back(ItemList(4));
+    player.inventory.push_back(ItemList(5));
 }
 
 void refreshStatus(Player& player) {
@@ -376,40 +393,49 @@ void showInventory(Player& player) {
 	std::cout << "\n1. 1번째아이템사용하기  2. 2번째 아이템사용하기    3. 3번째아이템사용하기  5. 버리기     0. 돌아가기" << std::endl;
 	std::cout << "\n입력: ";
     std::cin >> inventoryInput;
-    if (inventoryInput == 1) 
-    {
-        std::cout << "\n1번째 아이템 사용하기를 선택하셨습니다." << std::endl;
-		player.stat.hp = std::min(player.stat.hp + player.inventory[0].hp, player.stat.maxHp);
-		player.inventory.erase(player.inventory.begin());
-    }
-    else if (inventoryInput == 2) 
-    {
-		std::cout << "\n2번째 아이템 사용하기를 선택하셨습니다." << std::endl;
-        player.stat.hp = std::min(player.stat.hp + player.inventory[1].hp, player.stat.maxHp);
-        player.inventory.erase(player.inventory.begin() + 1);
-    }
-    else if (inventoryInput == 3) 
-    {
-		std::cout << "\n3번째 아이템 사용하기를 선택하셨습니다." << std::endl;
-        player.stat.hp = std::min(player.stat.hp + player.inventory[3].hp, player.stat.maxHp);
-        player.inventory.erase(player.inventory.begin() + 2);
-	}
-    else if (inventoryInput == 5) 
-    {
-		std::cout << "\n버릴 아이템 번호를 입력하세요: ";
-    }
-    else if (inventoryInput == 0) 
-    {
+	if (inventoryInput > player.inventory.size()) {
+        std::cout << "\n잘못된 입력입니다." << std::endl;
         return;
     }
-    else 
-    {
-        std::cout << "\n잘못된 입력입니다." << std::endl;
+    else {
+        if (inventoryInput == 1)
+        {
+            std::cout << "\n1번째 아이템 사용하기를 선택하셨습니다." << std::endl;
+            player.stat.hp = std::min(player.stat.hp + player.inventory[0].hp, player.stat.maxHp);
+            player.inventory.erase(player.inventory.begin());
+        }
+        else if (inventoryInput == 2)
+        {
+            std::cout << "\n2번째 아이템 사용하기를 선택하셨습니다." << std::endl;
+            player.stat.hp = std::min(player.stat.hp + player.inventory[1].hp, player.stat.maxHp);
+            player.inventory.erase(player.inventory.begin() + 1);
+        }
+        else if (inventoryInput == 3)
+        {
+            std::cout << "\n3번째 아이템 사용하기를 선택하셨습니다." << std::endl;
+            player.stat.hp = std::min(player.stat.hp + player.inventory[3].hp, player.stat.maxHp);
+            player.inventory.erase(player.inventory.begin() + 2);
+        }
+        else if (inventoryInput == 5)
+        {
+            std::cout << "\n버릴 아이템 번호를 입력하세요: ";
+        }
+        else if (inventoryInput == 0)
+        {
+            return;
+        }
+        else
+        {
+            std::cout << "\n잘못된 입력입니다." << std::endl;
+        }
     }
+    
 }
 
 void gameLoop(Player& player, int& characterCount)
 {
+    std::vector<Item> shopStock;
+    ramdomItemList(player, shopStock);
     int playingInput = 0;
     while (true) {
         refreshStatus(player);
@@ -425,7 +451,7 @@ void gameLoop(Player& player, int& characterCount)
         std::cin >> playingInput;
         if (playingInput == 1)
         {
-            showShop(player);
+            showShop(player, shopStock);
         }
         else if (playingInput == 2)
         {
@@ -488,52 +514,115 @@ void gameLoop(Player& player, int& characterCount)
     }
 }
 
-void showShop(Player& player)
+void showShop(Player& player, std::vector<Item>& shopStock)
 {
-    system("cls");
-    int shopInput = 0;
-    int buyInput = 0;
-    int sellInput = 0;
+    while (true)
+    {
 
-    std::cout << "\n대화하기를 선택하셨습니다." << std::endl;
-    std::cout << "\n상인" << std::endl;
-    showMerchantTalk();
-    std::cout << "\n1. 구매하기   2. 판매하기     3. 돌아가기" << std::endl;
-    std::cout << "\n입력: ";
-    std::cin >> shopInput;
-    if (shopInput == 1)
-    {
-        std::cout << "\n구매하기를 선택하셨습니다." << std::endl;
-        std::cout << "\n구매 물품 목록" << std::endl;
-        std::cout << "\n1. 체력 회복 물약  2. 마나 회복 물약" << std::endl;
-        std::cout << "\n구매할 물품 번호를 입력하세요: ";
-        std::cin >> buyInput;
-    }
-    else if (shopInput == 2)
-    {
-        std::cout << "\n판매하기를 선택하셨습니다." << std::endl;
-        std::cout << "\n판매 물품 목록" << std::endl;
-        std::cout << "\n1. 체력 회복 물약  2. 마나 회복 물약" << std::endl;
-        std::cout << "\n판매할 물품 번호를 입력하세요: ";
-        std::cin >> sellInput;
-    }
-    else if (shopInput == 3)
-    {
-        std::cout << "\n돌아가기를 선택하셨습니다." << std::endl;
-    }
-    else
-    {
-        std::cout << "\n잘못된 입력입니다." << std::endl;
+        system("cls");
+        int shopInput = 0;
+        int buyInput = 0;
+        int sellInput = 0;
+
+        std::cout << "\n대화하기를 선택하셨습니다." << std::endl;
+        std::cout << "\n상인" << std::endl;
+        showMerchantTalk();
+        std::cout << "\n1. 구매하기   2. 판매하기     3. 돌아가기" << std::endl;
+        std::cout << "\n입력: ";
+        std::cin >> shopInput;
+        if (shopInput == 1)
+        {
+            std::cout << "\n구매하기를 선택하셨습니다." << std::endl;
+		    system("cls");
+            std::cout << "\n구매 물품 목록" << std::endl;
+            std::cout << "\n 0. 돌아가기" << std::endl;
+            showShopItem(player, shopStock);
+		    std::cout << "\n------------------------------" << std::endl;
+		    std::cout << "\n현재 골드: " << player.gold << std::endl;
+            std::cout << "\n구매할 물품 번호를 입력하세요: ";
+            std::cin >> buyInput;
+            if (buyInput == 0) {
+			    std::cout << "\n돌아가기를 선택하셨습니다." << std::endl;
+                showShop(player, shopStock);
+		    }
+
+            if (buyInput < 1 || buyInput > shopStock.size()) {
+                std::cout << "\n잘못된 입력입니다." << std::endl;
+            }
+            else {
+                Item selectedItem = shopStock[buyInput - 1];
+                if (player.gold >= selectedItem.price) {
+                    player.gold -= selectedItem.price;
+                    player.inventory.push_back(selectedItem);
+					shopStock.erase(shopStock.begin() + (buyInput - 1));
+                    std::cout << "\n" << selectedItem.name << "을(를) 구매했습니다! 남은 골드: " << player.gold << std::endl;
+				    system("pause");
+                }
+                else {
+                    std::cout << "\n골드가 부족합니다." << std::endl;
+                    system("pause");
+
+                }
+            }
+        }
+        else if (shopInput == 2)
+        {
+            std::cout << "\n판매하기를 선택하셨습니다." << std::endl;
+            std::cout << "\n판매 물품 목록" << std::endl;
+            showPlayerItem(player);
+            std::cout << "\n판매할 물품 번호를 입력하세요: ";
+            std::cin >> sellInput;
+        }
+        else if (shopInput == 3)
+        {
+            std::cout << "\n돌아가기를 선택하셨습니다." << std::endl;
+            break;
+        }
+        else
+        {
+            std::cout << "\n잘못된 입력입니다." << std::endl;
+        }
     }
 }
 
-void showShopItem() {
-    for (int i = 0; i < 3; i++) 
+void ramdomItemList(Player& player, std::vector<Item>& shopStock) {
+    // 각 층마다 한번씩만 물품을 파는 것으로 가정하고, 층마다 파는 물품이 다르다고 가정
+    // 예시로 저층에선 체력 회복 물약, 중층부터 확률에 따라 유물 아이템이 등장하는 것
+    // 층마다 파는 물품이 같을수도 다를수도
+    // 가아끔 아주 희귀한 유물 아이템이 등장할 수도 있음
+
+      int floor = player.floor;
+      shopStock.push_back(ItemList(1));
+    std::cout << "\n" << "1. " << shopStock[0].name << " | 가격: " << shopStock[0].price;
+    for (int i = 1; i <= 4; i++) 
     {
-		// 각 층마다 한번씩만 물품을 파는 것으로 가정하고, 층마다 파는 물품이 다르다고 가정하겠습니다.
-		// 예시로 저층에선 체력 회복 물약, 중층부터 확률에 따라 유물 아이템이 등장하는 것으로 하겠습니다.
-		// 층마다 파는 물품이 같을수도 다를수도
-		// 가아끔 아주 희귀한 유물 아이템이 등장할 수도 있습니다.
+        int randomCnt = rand() % 100;
+        int pickedItem = (floor * 3) + randomCnt;
+
+        if (pickedItem < 90) {
+            int randomType = (rand() % 3 + 1);
+            Item itemList = ItemList(randomType);
+            shopStock.push_back(itemList);
+            std::cout << "\n" << (i + 1) << ". " << shopStock[i].name << " | 가격: " << shopStock[i].price;
+        } else {
+            int randomType = (rand() % 7 + 1);
+            Item itemList = ItemList(randomType);
+            shopStock.push_back(itemList);
+            std::cout << "\n" << (i + 1) << ". " << shopStock[i].name << " | 가격: " << shopStock[i].price;
+        }
+    }
+}
+
+void showShopItem(Player& player, std::vector<Item>& shopStock) {
+    // 물품 출력
+    for (int i = 0; i <= shopStock.size() - 1; i++) {
+        printf("\n %d. %s | 가격: %d\n", i+1 ,shopStock[i].name.c_str(), shopStock[i].price);
+    }
+}
+
+void showPlayerItem(Player& player) {
+    for (size_t i = 0; i < player.inventory.size(); i++) {
+        std::cout << "\n" << (i + 1) << ". " << player.inventory[i].name;
     }
 }
 
@@ -614,7 +703,6 @@ int main()
 
     Player saveSlots[3] = {};
     int characterCount = 0;
-
     while (true)
     {
         cleanUpCharacters(saveSlots, characterCount);
