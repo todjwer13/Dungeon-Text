@@ -541,6 +541,7 @@ void showShop(Player& player, std::vector<Item>& shopStock)
 		    std::cout << "\n현재 골드: " << player.gold << std::endl;
             std::cout << "\n구매할 물품 번호를 입력하세요: ";
             std::cin >> buyInput;
+            // 구매 로직
             if (buyInput == 0) {
 			    std::cout << "\n돌아가기를 선택하셨습니다." << std::endl;
                 showShop(player, shopStock);
@@ -568,10 +569,29 @@ void showShop(Player& player, std::vector<Item>& shopStock)
         else if (shopInput == 2)
         {
             std::cout << "\n판매하기를 선택하셨습니다." << std::endl;
+            system("cls");
             std::cout << "\n판매 물품 목록" << std::endl;
+			std::cout << "\n 현재 골드: " << player.gold << std::endl;
+			std::cout << "\n 0. 돌아가기" << std::endl;
             showPlayerItem(player);
             std::cout << "\n판매할 물품 번호를 입력하세요: ";
             std::cin >> sellInput;
+            // 판매 로직
+            if (sellInput == 0) {
+                std::cout << "\n돌아가기를 선택하셨습니다." << std::endl;
+                showShop(player, shopStock);
+            }
+
+            if (sellInput < 1 || sellInput > player.inventory.size()) {
+                std::cout << "\n잘못된 입력입니다." << std::endl;
+            }
+            else {
+                Item selectedItem = player.inventory[sellInput - 1];
+                player.gold += selectedItem.price * 0.5;
+                player.inventory.erase(player.inventory.begin() + (sellInput - 1));
+                std::cout << "\n" << selectedItem.name << "을(를) 판매했습니다! 현재 골드: " << player.gold << std::endl;
+                system("pause");
+            }
         }
         else if (shopInput == 3)
         {
