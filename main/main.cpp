@@ -187,28 +187,31 @@ void deleteCharacter(Player* saveSlots, int& characterCount);
 
 static void startMenu(Player* saveSlots, int& characterCount)
 {
-    system("cls");
-    int menuInput = 0;
-    std::cout << "게임에 오신 것을 환영합니다!" << std::endl;
-    std::cout << "\n1. 게임 시작하기" << std::endl;
-    std::cout << "2. 게임 종료하기" << std::endl;
-    std::cout << "\n입력: ";
-    std::cin >> menuInput;
-    if (menuInput == 1)
-    {
+    while(true) {
         system("cls");
-        characterMenu(saveSlots, characterCount);
-    }
-    else if (menuInput == 2)
-    {
-        system("cls");
-        std::cout << "\n게임을 종료합니다.";
+        int menuInput = 0;
+        std::cout << "게임에 오신 것을 환영합니다!" << std::endl;
+        std::cout << "\n1. 게임 시작하기" << std::endl;
+        std::cout << "2. 게임 종료하기" << std::endl;
+        std::cout << "\n입력: ";
+        std::cin >> menuInput;
+        if (menuInput == 1)
+        {
+            system("cls");
+            characterMenu(saveSlots, characterCount);
+        }
+        else if (menuInput == 2)
+        {
+            system("cls");
+            std::cout << "\n게임을 종료합니다.";
 
-        exit(0);
-    }
-    else
-    {
-        std::cout << "\n잘못된 입력입니다.";
+            exit(0);
+        }
+        else
+        {
+            std::cout << "\n잘못된 입력입니다.";
+			system("pause");
+        }
     }
 }
 
@@ -298,7 +301,7 @@ void createCharacter(Player* saveSlots, int& characterCount) {
     giveStartetPack(saveSlots[characterCount]);
 
     saveSlots[characterCount].stat.name = newName;
-    saveSlots[characterCount].stat.hp = 100;
+    saveSlots[characterCount].stat.hp = 150;
     saveSlots[characterCount].stat.maxHp = 100;
     saveSlots[characterCount].stat.atk = 15;
     saveSlots[characterCount].stat.def = 5;
@@ -353,7 +356,7 @@ void refreshStatus(Player& player) {
     player.armorDef = 0;
     player.armorHp = 0;
 	// 인벤토리를 순회하면서 유물의 공격력과 방어력, 체력 보너스를 적용
-    for (size_t i = 0; i < player.inventory.size(); i++) {
+    for (int i = 0; i < player.inventory.size(); i++) {
         if (player.inventory[i].itemType == RELICS)
         {
 			player.weaponAtk += player.inventory[i].weaponAtk;
@@ -364,9 +367,12 @@ void refreshStatus(Player& player) {
 }
 
 void showInventory(Player& player) {
-	int inventoryInput = 0;
-	std::cout << "획득한 유물 아이템:" << std::endl;
-    for (size_t i = 0; i < player.inventory.size(); i++) {
+    int inventoryInput = 0;
+    int throwAwayInput = 0;
+    std::vector<int> consumableIndices;
+
+    std::cout << "획득한 유물 아이템:" << std::endl;
+    for (int i = 0; i < player.inventory.size(); i++) {
         if (player.inventory[i].itemType == RELICS)
         {
             std::cout << "\n" << player.inventory[i].name;
@@ -375,25 +381,26 @@ void showInventory(Player& player) {
             }
             if (player.inventory[i].armorDef > 0) {
                 std::cout << " | 추가 방어력: " << player.inventory[i].armorDef;
-			}
+            }
             if (player.inventory[i].armorHp > 0) {
                 std::cout << " | 추가 체력: " << player.inventory[i].armorHp;
-			}
+            }
         }
     }
 
-	std::cout << "\n------------------------------" << std::endl;
+    std::cout << "\n------------------------------" << std::endl;
     std::cout << "\n소비 아이템:" << std::endl;
-    for (size_t i = 0; i < player.inventory.size(); i++) {
+    for (int i = 0; i < player.inventory.size(); i++) {
         if (player.inventory[i].itemType == CONSUMABLE)
         {
-            std::cout << i + 1 << ". " << player.inventory[i].name << std::endl;
+            consumableIndices.push_back(i);
+            std::cout << i + 1 << ". " << player.inventory[i].name << " | 회복량: " << player.inventory[i].hp << std::endl;
         }
     }
-	std::cout << "\n1. 1번째아이템사용하기  2. 2번째 아이템사용하기    3. 3번째아이템사용하기  5. 버리기     0. 돌아가기" << std::endl;
-	std::cout << "\n입력: ";
+    std::cout << "\n0. 돌아가기" << std::endl;
+    std::cout << "\n번호를 입력해주세요: ";
     std::cin >> inventoryInput;
-	if (inventoryInput > player.inventory.size()) {
+    if (inventoryInput > player.inventory.size()) {
         std::cout << "\n잘못된 입력입니다." << std::endl;
         return;
     }
@@ -401,24 +408,51 @@ void showInventory(Player& player) {
         if (inventoryInput == 1)
         {
             std::cout << "\n1번째 아이템 사용하기를 선택하셨습니다." << std::endl;
-            player.stat.hp = std::min(player.stat.hp + player.inventory[0].hp, player.stat.maxHp);
-            player.inventory.erase(player.inventory.begin());
+            player.stat.hp = std::min(player.stat.hp + player.inventory[consumableIndices[0]].hp, player.stat.maxHp + player.armorHp);
+            player.inventory.erase(player.inventory.begin() + consumableIndices[0]);
         }
         else if (inventoryInput == 2)
         {
             std::cout << "\n2번째 아이템 사용하기를 선택하셨습니다." << std::endl;
-            player.stat.hp = std::min(player.stat.hp + player.inventory[1].hp, player.stat.maxHp);
-            player.inventory.erase(player.inventory.begin() + 1);
+            player.stat.hp = std::min(player.stat.hp + player.inventory[consumableIndices[1]].hp, player.stat.maxHp + player.armorHp);
+            player.inventory.erase(player.inventory.begin() + consumableIndices[1]);
+
         }
         else if (inventoryInput == 3)
         {
             std::cout << "\n3번째 아이템 사용하기를 선택하셨습니다." << std::endl;
-            player.stat.hp = std::min(player.stat.hp + player.inventory[3].hp, player.stat.maxHp);
-            player.inventory.erase(player.inventory.begin() + 2);
+            player.stat.hp = std::min(player.stat.hp + player.inventory[consumableIndices[2]].hp, player.stat.maxHp + player.armorHp);
+            player.inventory.erase(player.inventory.begin() + consumableIndices[2]);
+
         }
         else if (inventoryInput == 5)
         {
             std::cout << "\n버릴 아이템 번호를 입력하세요: ";
+            std::cin >> throwAwayInput;
+            if (throwAwayInput < 1 || throwAwayInput > player.inventory.size()) {
+                std::cout << "\n잘못된 입력입니다." << std::endl;
+                return;
+            }
+            if (player.inventory[throwAwayInput - 1].itemType == RELICS)
+            {
+                std::cout << "\n유물 아이템은 버릴 수 없습니다." << std::endl;
+                return;
+            }
+            if (throwAwayInput == 1)
+            {
+                std::cout << "\n1번째 아이템 버리기를 선택하셨습니다." << std::endl;
+                player.inventory.erase(player.inventory.begin() + consumableIndices[0]);
+            }
+            else if (throwAwayInput == 2)
+            {
+                std::cout << "\n2번째 아이템 버리기를 선택하셨습니다." << std::endl;
+                player.inventory.erase(player.inventory.begin() + consumableIndices[1]);
+            }
+            else if (throwAwayInput == 3)
+            {
+                std::cout << "\n3번째 아이템 버리기를 선택하셨습니다." << std::endl;
+                player.inventory.erase(player.inventory.begin() + consumableIndices[2]);
+            }
         }
         else if (inventoryInput == 0)
         {
@@ -429,7 +463,7 @@ void showInventory(Player& player) {
             std::cout << "\n잘못된 입력입니다." << std::endl;
         }
     }
-    
+
 }
 
 void gameLoop(Player& player, int& characterCount)
@@ -520,9 +554,17 @@ void showShop(Player& player, std::vector<Item>& shopStock)
     {
 
         system("cls");
+		int conCount = 0;
         int shopInput = 0;
         int buyInput = 0;
         int sellInput = 0;
+
+        for (int i = 0; i < player.inventory.size(); i++) {
+            if (player.inventory[i].itemType == CONSUMABLE)
+            {
+                conCount++;
+            }
+        }
 
         std::cout << "\n대화하기를 선택하셨습니다." << std::endl;
         std::cout << "\n상인" << std::endl;
@@ -534,23 +576,34 @@ void showShop(Player& player, std::vector<Item>& shopStock)
         {
             std::cout << "\n구매하기를 선택하셨습니다." << std::endl;
 		    system("cls");
+            if (conCount >= 3)
+            {
+                std::cout << "\n소비 아이템 가득참!!" << std::endl;
+            }
             std::cout << "\n구매 물품 목록" << std::endl;
             std::cout << "\n 0. 돌아가기" << std::endl;
             showShopItem(player, shopStock);
 		    std::cout << "\n------------------------------" << std::endl;
 		    std::cout << "\n현재 골드: " << player.gold << std::endl;
-            std::cout << "\n구매할 물품 번호를 입력하세요: ";
+            std::cout << "\n번호를 입력하세요: ";
             std::cin >> buyInput;
             // 구매 로직
             if (buyInput == 0) {
 			    std::cout << "\n돌아가기를 선택하셨습니다." << std::endl;
-                showShop(player, shopStock);
+                break;
 		    }
 
             if (buyInput < 1 || buyInput > shopStock.size()) {
                 std::cout << "\n잘못된 입력입니다." << std::endl;
             }
             else {
+                if (conCount >= 3)
+                {
+                    std::cout << "\n소비 아이템은 최대 3개까지만 소지할 수 있습니다." << std::endl;
+                    system("pause");
+                    return;
+				}
+
                 Item selectedItem = shopStock[buyInput - 1];
                 if (player.gold >= selectedItem.price) {
                     player.gold -= selectedItem.price;
@@ -579,7 +632,7 @@ void showShop(Player& player, std::vector<Item>& shopStock)
             // 판매 로직
             if (sellInput == 0) {
                 std::cout << "\n돌아가기를 선택하셨습니다." << std::endl;
-                showShop(player, shopStock);
+                break;
             }
 
             if (sellInput < 1 || sellInput > player.inventory.size()) {
@@ -714,6 +767,7 @@ bool startBattle(Player& player, Monster& monster)
             }
         }
     }
+    return false;
 }
 
 
